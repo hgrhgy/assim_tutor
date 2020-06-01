@@ -12,7 +12,8 @@ $ git clone https://github.com/spack/spack.git
 ```
 把以下配置放入到`.bashrc`中
 ```shell
-export SPACK_PREFIX=/home/huangyj/geoschem/lib/spack
+# 源码存放的目录
+export SPACK_PREFIX=/path/to/spack/src 
 export PATH=$SPACK_PREFIX/bin:$PATH
 ```
 创建spack环境并激活
