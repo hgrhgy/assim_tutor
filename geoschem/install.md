@@ -244,7 +244,7 @@ unset OMP_STACKSIZE
 echo "activate python env geoschem"
 conda activate geoschem
 
-ehco "activate spack env geoschem"
+echo "activate spack env geoschem"
 spack env activate geoschem
 
 echo "spack set compiler gcc@9.2.0"
