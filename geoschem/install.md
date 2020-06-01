@@ -202,3 +202,105 @@ $ make -j4 install
 $ cd ..
 $ ./geos
 ```
+
+## 3. 形成的配置文件
+geos.env， 通过`source geos.env`使用
+```sh
+#!/bin/bash
+#==============================================================================
+# %%%%% Clear existing environment variables %%%%%
+#==============================================================================
+unset PERL_HOME
+unset IDL_HOME
+unset EMACS_HOME
+unset CC
+unset CXX
+unset FC
+unset F77
+unset F90
+unset NETCDF_BIN
+unset NETCDF_HOME
+unset NETCDF_INCLUDE
+unset NETCDF_LIB
+unset NETCDF_FORTRAN_BIN
+unset NETCDF_FORTRAN_HOME
+unset NETCDF_FORTRAN_INCLUDE
+unset NETCDF_FORTRAN_LIB
+unset GC_BIN
+unset GC_INCLUDE
+unset GC_LIB
+unset GC_F_BIN
+unset GC_F_INCLUDE
+unset GC_F_LIB
+unset OMP_NUM_THREADS
+unset OMP_STACKSIZE
+ 
+#==============================================================================
+# %%%%% Load modules for GNU Fortran 7.1 %%%%%
+#
+# NOTE: Your module load commands may be different than these.
+# Ask your IT staff for more information.
+#==============================================================================
+echo "activate python env geoschem"
+conda activate geoschem
+
+ehco "activate spack env geoschem"
+spack env activate geoschem
+
+echo "spack set compiler gcc@9.2.0"
+spack load gcc@9.2.0
+
+echo "loading dependencies ..."
+spack load netcdf-c%gcc@9.2.0
+spack load netcdf-fortran%gcc@9.2.0
+spack load git%gcc@9.2.0
+spack load flex%gcc@9.2.0       
+spack load cmake%gcc@9.2.0        
+spack load gdb%gcc@9.2.0     
+
+# Define F90 and F77 environment variables (may be needed by some software)
+export F90=$FC
+export F77=$FC
+
+#==============================================================================
+# %%%%% Settings for OpenMP parallelization %%%%%
+#==============================================================================
+
+# Max out the stack memory for OpenMP
+# Asking for a huge number will just give you the max availble
+export OMP_STACKSIZE=500m
+
+# By default, set the number of threads for OpenMP parallelization to 1
+export OMP_NUM_THREADS=24
+
+# Redefine number threads for OpenMP parallelization
+# (a) If in a SLURM partition, set OMP_NUM_THREADS = SLURM_CPUS_PER_TASK
+# (b) Or, set OMP_NUM_THREADS to the optional first argument that is passed
+if [[ -n "${SLURM_CPUS_PER_TASK+1}" ]]; then
+  export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+elif [[ "$#" -eq 1 ]]; then
+  if [[ "x$1" != "xignoreeof" ]]; then
+     export OMP_NUM_THREADS=$1
+  fi
+fi
+echo "Number of OpenMP threads: $OMP_NUM_THREADS"
+
+#==============================================================================
+# %%%%% Define relevant environment variables %%%%%
+#==============================================================================
+
+# Machine architecture
+export ARCH=`uname -s`
+
+# netcdf-c
+export NETCDF_HOME=`spack location -i netcdf-c%gcc@9.2.0`
+export GC_BIN=$NETCDF_HOME/bin
+export GC_INCLUDE=$NETCDF_HOME/include
+export GC_LIB=$NETCDF_HOME/lib
+
+# netcdf-fortran
+export NETCDF_FORTRAN_HOME=`spack location -i netcdf-fortran%gcc@9.2.0`
+export GC_F_BIN=$NETCDF_FORTRAN_HOME/bin
+export GC_F_INCLUDE=$NETCDF_FORTRAN_HOME/include
+export GC_F_LIB=$NETCDF_FORTRAN_HOME/lib
+```
